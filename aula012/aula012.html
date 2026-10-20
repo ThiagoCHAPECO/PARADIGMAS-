@@ -1,0 +1,134 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Aula 12 · Thiago Gimenes</title><style>body{font:15px/1.5 "Segoe UI",system-ui,sans-serif;max-width:820px;margin:2rem auto;padding:0 16px;color:#111}h2{border-bottom:2px solid #ddd;padding-bottom:.25rem;margin-top:1.6rem}dt{font-weight:700;margin-top:.6rem}dd{margin:.2rem 0 0;white-space:pre-wrap}dd.vazio{color:#b42318;font-style:italic}img{max-width:100%;border:1px solid #ccc;border-radius:6px}pre{background:#f4f4f4;padding:.6rem;border-radius:6px;white-space:pre-wrap;font:12.5px/1.45 Consolas,monospace}</style><h1>Laboratório Funcional · Aula 12</h1><p>Thiago Gimenes · RA 24016862-2 · Turma Esoft-6s-A<br>Gerado em 20/10/2026, 00:00:06 · tempo registrado no cronômetro: 0:00</p><h2>Preparação: Programar com funções matemáticas</h2><dl><dt>def area(r): return 3.14159 * r * r</dt><dd>Pura</dd><dt>def agora(): return datetime.now()</dt><dd>Impura</dd><dt>def total(lista): return sum(lista)</dt><dd>Pura</dd><dt>def registra(msg): print(msg)</dt><dd>Impura</dd><dt>def sorteia(): return random.randint(1, 6)</dt><dd>Impura</dd><dt>def poe(lista, x): lista.append(x); return lista</dt><dd>Impura</dd><dt>0.1 Escolha duas funções que você marcou como impuras e explique, para cada uma, o que a impede de ser pura.</dt><dd>agora() é impura porque depende do relógio do sistema: chamadas sem parâmetros podem retornar horários diferentes. poe(lista, x) é impura porque lista.append(x) modifica a lista recebida, produzindo um efeito colateral.</dd></dl><h2>Prática 1: Funções puras e formas funcionais</h2><dl><dt>Previsão: O que as linhas 1, 4 e 7 vão imprimir?</dt><dd>1: A-1 A-2
+4: 14
+7: [7, 3, 9] [3, 7, 9]</dd><dt>Saídas (original e com compor(g, f))</dt><dd><pre>Original (executado localmente):
+1: A-1 A-2
+2: True
+3: 8
+4: 14
+5: [4, 9, 16]
+6: 29
+7: [7, 3, 9] [3, 7, 9]
+8: [3, 7, 9]
+
+Com compor(g, f) (executado localmente):
+1: A-1 A-2
+2: True
+3: 8
+4: 18
+5: [4, 9, 16]
+6: 29
+7: [7, 3, 9] [3, 7, 9]
+8: [3, 7, 9]</pre></dd><dt>1.1 Por que proximo_id("A") devolve valores diferentes para a mesma entrada? Por que isso dificulta os testes (p. 637)?</dt><dd>A função lê e incrementa a variável global contador. Assim, o resultado depende do estado anterior e da ordem das chamadas, além do prefixo. Os testes precisam reiniciar ou controlar esse estado; sem isso, a mesma entrada pode gerar resultados diferentes entre testes.</dd><dt>1.2 compor(f, g)(4) e compor(g, f)(4) deram valores diferentes. Calcule os dois à mão e explique a diferença.</dt><dd>compor(f, g)(4) = f(g(4)) = f(12) = 14.
+compor(g, f)(4) = g(f(4)) = g(6) = 18.
+A composição aplica primeiro a função mais interna. Trocar a ordem altera o resultado, pois a composição não é comutativa em geral.</dd><dt>1.3 Qual é a diferença entre sorted(notas) e notas.sort()? Qual dos dois segue o estilo funcional, e por quê?</dt><dd>sorted(notas) retorna uma nova lista ordenada e preserva notas. notas.sort() ordena a própria lista e retorna None. sorted segue o estilo funcional neste exemplo por produzir outro valor sem modificar a entrada.</dd></dl><h2>Prática 2: Scheme: tudo é lista</h2><dl><dt>Previsão: (car '(A B C))</dt><dd>A</dd><dt>Previsão: (cdr '(A B C))</dt><dd>(B C)</dd><dt>Previsão: (cons '(A B) '(C D))</dt><dd>((A B) C D)</dd><dt>Saídas (original e sem o apóstrofo)</dt><dd><pre>Saída esperada do original (análise do código; Scheme não executado neste ambiente):
+22
+14
+25
+8
+negativo
+A
+(B C)
+(A B C)
+((A B) C D)
+B
+
+Sem o apóstrofo: as cinco primeiras linhas são impressas; depois ocorre erro de identificador não definido (A). A redação e a capitalização dos símbolos dependem da implementação.</pre></dd><dt>2.1 Para que serve o apóstrofo (')? O que o Scheme tentou fazer com (A B C) quando ele não estava lá?</dt><dd>O apóstrofo abrevia quote e impede a avaliação da expressão, tratando-a como dado. Sem ele, (A B C) é interpretado como uma aplicação de A aos argumentos B e C. Como esses identificadores não foram definidos, ocorre erro, em vez de acessar uma lista literal.</dd><dt>2.2 Escreva uma expressão que devolva o terceiro elemento de '(A B C) usando só car e cdr. Teste no OneCompiler e cole aqui a expressão e o resultado.</dt><dd><pre>(car (cdr (cdr '(A B C))))
+Resultado esperado: C.
+O primeiro cdr remove A, o segundo remove B, e car obtém C. Resultado deduzido; não executado no OneCompiler.</pre></dd></dl><h2>Prática 3: Recursão e recursão em cauda</h2><dl><dt>O que vi no passo a passo</dt><dd>n = 4: comum em 8 passos, até 3 multiplicações esperando (expressão de até 30 caracteres); em cauda em 6 passos, nada esperando (até 17 caracteres).
+n = 6: comum em 12 passos, até 5 multiplicações esperando (expressão de até 42 caracteres); em cauda em 8 passos, nada esperando (até 18 caracteres).</dd><dt>Previsão: O programa em Scheme chama conta-ate recursivamente um milhão de vezes. Vai funcionar? E a mesma função em Python?</dt><dd>Em Scheme, a chamada em cauda deve completar e retornar 1000000 sem acumular registros na pilha. Em Python, a chamada com um milhão deve gerar RecursionError, pois não há eliminação de chamadas em cauda.</dd><dt>Saída do Scheme</dt><dd><pre>Saída esperada por análise (Scheme não executado neste ambiente):
+#t
+#f
+2432902008176640000
+2432902008176640000
+1000000</pre></dd><dt>Saída do Python (as últimas linhas bastam)</dt><dd><pre>Execução local em Python:
+500
+Traceback (most recent call last):
+  File "/workspace/scratch/9a313ff93474/output/check.py", line 9, in &lt;module&gt;
+    print(conta_ate(1_000_000, 0))
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/9a313ff93474/output/check.py", line 6, in conta_ate
+    return conta_ate(n - 1, acc + 1)     # a chamada é a última operação
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/9a313ff93474/output/check.py", line 6, in conta_ate
+    return conta_ate(n - 1, acc + 1)     # a chamada é a última operação
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/9a313ff93474/output/check.py", line 6, in conta_ate
+    return conta_ate(n - 1, acc + 1)     # a chamada é a última operação
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 996 more times]
+RecursionError: maximum recursion depth exceeded</pre></dd><dt>3.1 No passo a passo, o que cresce na recursão comum e não cresce na recursão em cauda? Por quê?</dt><dd>Na recursão comum crescem as multiplicações pendentes e os registros na pilha: cada chamada espera o retorno para multiplicar. Na versão em cauda, a multiplicação já atualiza o acumulador antes da próxima chamada; nada fica pendente. Com otimização de chamadas em cauda, o registro pode ser reutilizado, mantendo espaço constante para o controle das chamadas.</dd><dt>3.2 Por que o Scheme fez um milhão de chamadas e o Python parou com RecursionError? (Dica: releia o quadro sobre a otimização da chamada em cauda e a mensagem de erro do Python. O livro fala do Scheme na p. 656.)</dt><dd>Scheme garante execução adequada de chamadas em cauda, sem acumular registros para essa cadeia de chamadas. Python não elimina essas chamadas: cada uma usa mais um registro até atingir o limite de recursão e gerar RecursionError. Ser a última operação é necessário para a recursão em cauda, mas não faz Python otimizá-la automaticamente.</dd></dl><h2>Prática 4: Mão na massa: três funções sobre listas</h2><dl><dt>Saída final (com os três ok)</dt><dd><pre>Saída esperada por análise (Scheme não executado neste ambiente):
+tamanho: 3  ok
+soma-quadrados: 14  ok
+pares: (2 4 6)  ok</pre></dd><dt>4.1 Cole aqui as suas três funções (tamanho, soma-quadrados e pares).</dt><dd><pre>(define (tamanho lis)
+  (if (null? lis)
+      0
+      (+ 1 (tamanho (cdr lis)))))
+
+(define (soma-quadrados lis)
+  (if (null? lis)
+      0
+      (+ (* (car lis) (car lis))
+         (soma-quadrados (cdr lis)))))
+
+(define (pares lis)
+  (cond ((null? lis) '())
+        ((even? (car lis))
+         (cons (car lis) (pares (cdr lis))))
+        (else (pares (cdr lis)))))</pre></dd><dt>4.2 Qual foi a parte mais difícil? Onde você usou null?, car e cdr em cada função?</dt><dd>Sugestão de resposta pessoal: a parte mais difícil foi montar a lista de pares sem alterar a original. Em todas as funções, null? identifica o caso base e cdr avança pela lista. tamanho soma 1 por elemento e não precisa de car. soma-quadrados usa car para calcular o quadrado do elemento atual. pares usa car para testar even? e cons para preservar o elemento quando ele é par.</dd></dl><h2>Prática 5: Haskell: padrões, compreensões e preguiça</h2><dl><dt>Previsão: squares é uma lista infinita. O que você acha que take 5 squares imprime? E primeiro 42 (div 1 0)?</dt><dd>take 5 squares imprime [0,1,4,9,16].
+primeiro 42 (div 1 0) imprime 42.</dd><dt>Saídas (original e com member 17)</dt><dd><pre>Saída esperada por análise (Haskell não executado neste ambiente):
+2432902008176640000
+[1,2,4,7,14]
+[2,2,4,7,8,9]
+[0,1,4,9,16]
+[0,1,4,9,16,25,36,49]
+True
+42
+
+Com member 17 squares: as linhas anteriores permanecem iguais; a última busca não produz resultado e continua indefinidamente, podendo ser interrompida pelo limite do ambiente.</pre></dd><dt>5.1 Como o Haskell consegue imprimir parte de uma lista infinita? E por que primeiro 42 (div 1 0) não deu erro de divisão por zero?</dt><dd>A avaliação preguiçosa calcula apenas os elementos exigidos pelo consumidor. take 5 solicita somente os cinco primeiros quadrados. Em primeiro 42 (div 1 0), o segundo argumento é ignorado e nunca é avaliado, então a divisão por zero não é realizada.</dd><dt>5.2 O que aconteceu com member 17 squares? Por que ele nunca termina, enquanto member 16 squares terminou? Como você corrigiria? (Dica: squares está em ordem crescente. Quando já dá para desistir da busca? O livro mostra uma solução na p. 670.)</dt><dd>member 16 termina com True ao encontrar 16. Como 17 não é quadrado perfeito e a lista é infinita, a versão original nunca chega ao caso da lista vazia e não termina. Em uma lista crescente, pode-se retornar False assim que a cabeça ultrapassar o valor buscado:
+
+memberOrd b [] = False
+memberOrd b (a:x)
+  | a == b = True
+  | a &gt; b = False
+  | otherwise = memberOrd b x
+
+memberOrd 17 squares retorna False quando encontra 25. A correção pressupõe uma lista em ordem crescente.</dd></dl><h2>Prática 6: Você já usa funcional</h2><dl><dt>Previsão: O que mais10(5) e [1, 2, 3].map(vezes(5)) vão imprimir?</dt><dd>mais10(5): 15
+[1, 2, 3].map(vezes(5)): [5, 10, 15]</dd><dt>Saída do JavaScript</dt><dd><pre>Execução local em Node.js:
+15
+[ 5, 10, 15 ]
+56
+{ nome: 'Ana', nota: 7 } { nome: 'Ana', nota: 8 }</pre></dd><dt>Saída do Java</dt><dd><pre>Execução local em Java:
+14
+18
+1050.0
+[CABO, MONITOR, MOUSE, TECLADO]</pre></dd><dt>6.1 somador(10) já terminou de executar quando mais10(5) é chamado. Como a função devolvida ainda "lembra" o 10?</dt><dd>A função retornada forma um fechamento (closure): mantém acesso ao ambiente léxico em que foi criada, incluindo a ligação de n com 10. Esse ambiente continua acessível enquanto a função mais10 existir; por isso mais10(5) calcula 5 + 10.</dd><dt>6.2 Por que f.compose(g).apply(4) e f.andThen(g).apply(4) deram resultados diferentes? Qual deles corresponde ao compor(f, g) da Prática 1?</dt><dd>compose aplica g antes de f: f(g(4)) = f(12) = 14. andThen aplica f antes de g: g(f(4)) = g(6) = 18. f.compose(g) corresponde a compor(f, g) da Prática 1.</dd></dl><h2>Prática 7: O laço vira pipeline</h2><dl><dt>7.1 Primeiro exercício escolhido (1, 2 ou 3): cole o seu código reescrito.</dt><dd><pre>Exercício 1 — Java
+import java.util.*;
+public class Main {
+    public static void main(String[] args) {
+        List&lt;Integer&gt; nums = List.of(3, 8, 5, 12, 7, 6);
+        int soma = nums.stream()
+            .filter(n -&gt; n % 2 == 0)
+            .mapToInt(n -&gt; n * n)
+            .sum();
+        System.out.println(soma);
+    }
+}</pre></dd><dt>7.2 Segundo exercício escolhido: cole o seu código reescrito.</dt><dd><pre>Exercício 2 — JavaScript
+const alunos = [
+  { nome: "Ana", nota: 8.5 },
+  { nome: "Bruno", nota: 5.0 },
+  { nome: "Carla", nota: 7.0 },
+  { nome: "Davi", nota: 9.5 }
+];
+const aprovados = alunos
+  .filter(aluno =&gt; aluno.nota &gt;= 6)
+  .map(aluno =&gt; aluno.nome.toUpperCase());
+console.log(aprovados.join(", "));</pre></dd><dt>Saídas das suas versões</dt><dd><pre>Exercício 1 — Java (execução local):
+244
+
+Exercício 2 — JavaScript (execução local):
+ANA, CARLA, DAVI</pre></dd><dt>7.3 Qual versão é mais fácil de ler: a com laço ou a funcional? E qual é mais fácil de depurar (por exemplo, para ver um valor intermediário)?</dt><dd>Sugestão de resposta pessoal: a versão funcional é mais fácil de ler nesses exemplos curtos porque explicita as etapas de filtrar e transformar. A versão com laço costuma facilitar a depuração passo a passo, pois permite inspecionar cada iteração e variável. Em pipelines, também posso separar etapas e conferir os resultados intermediários.</dd></dl><h2>Fechamento: O que fica do paradigma funcional</h2><dl><dt>Uma função pura pode ler uma variável global que muda.</dt><dd>Falso</dd><dt>Em Scheme, a recursão em cauda não faz a pilha crescer.</dt><dd>Verdadeiro</dd><dt>O Python otimiza a recursão em cauda.</dt><dd>Falso</dd><dt>Em Haskell, [1 ..] só é calculada à medida que é usada.</dt><dd>Verdadeiro</dd><dt>filter, map e reduce dispensam laço e variável acumuladora.</dt><dd>Verdadeiro</dd><dt>Currying transforma uma função de vários parâmetros numa cadeia de funções de um parâmetro.</dt><dd>Verdadeiro</dd><dt>8.1 Qual versão é mais fácil de entender, e por quê? O livro estima que um programa funcional costuma levar cerca de 2 vezes mais tempo para executar (p. 678). Em que tipo de sistema você aceitaria esse custo, e em qual não?</dt><dd>Sugestão de resposta pessoal: a versão Haskell é mais clara depois de conhecer map e sum, pois expressa diretamente a soma dos cubos de 1 a n. Aceitaria algum custo adicional em relatórios e rotinas administrativas se a clareza e a facilidade de manutenção compensassem. Em processamento com prazo rígido, como controle em tempo real, avaliaria cuidadosamente a latência. A estimativa de 2 vezes apresentada no enunciado não é uma regra geral: desempenho depende da implementação, do compilador e da tarefa, e deve ser medido.</dd><dt>8.2 Em uma frase: o que mais surpreendeu você nesta atividade?</dt><dd>Sugestão de resposta pessoal: o que mais me surpreendeu foi poder trabalhar com uma lista infinita em Haskell e calcular apenas a parte necessária.</dd><dt>8.3 Qual é o erro de impressão, e como corrigir? O que a mensagem do compilador diz sobre o tipo que ele inferiu?</dt><dd>O erro é usar b &lt;- h como segundo gerador, quando deveria ser o filtro b &lt;= h. Em b &lt;- h, o compilador exige que h seja uma lista e ainda cria uma nova ligação para b; mas h é o pivô, do mesmo tipo dos elementos de t. O restante da definição impõe restrições incompatíveis, levando a erro de tipos (por exemplo, tipo infinito / occurs check, conforme o compilador). Não foi executado um compilador Haskell aqui; esta é a análise das restrições, não uma transcrição de diagnóstico.
+
+sort [] = []
+sort (h:t) = sort [b | b &lt;- t, b &lt;= h] ++ [h] ++ sort [b | b &lt;- t, b &gt; h]
+
+Resultado esperado para [7,2,9,4,2,8]: [2,2,4,7,8,9].</dd></dl></html>
